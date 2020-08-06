@@ -6,8 +6,6 @@
         <v-data-table
           :headers="headers"
           :items="teams"
-          :options.sync="pagingOptions"
-          :server-items-length="totalItems"
           :loading="loading"
           @click:row="onRowClick"
           :footerProps="{ 'items-per-page-options': [5, 10] }"
@@ -33,10 +31,12 @@ import {
 } from "../db/soccerTeamsDb";
 
 export default {
+  mounted() {
+    this.getSoccerTeams();
+  },
   data: () => ({
     teams: [],
     loading: true,
-    totalItems: null,
     snackBarMessage: "",
     showSnackbar: false,
     headers: [
@@ -63,41 +63,18 @@ export default {
         sortable: true,
       },
     ],
-    pagingInfo: {}  
   }),
-  computed: {
-    /** computed prop with get & set  for v-data-table options.
-     *  It's set every time user change page, number of rows or sort by a column
-     *  The get part is for the v-data-table to sync its UI.
-     */
-    pagingOptions: {
-      get() {
-        return this.pagingInfo;
-      },
-      set(pagingInfo) {
-        this.pagingInfo = pagingInfo;
-        let [orderBy = null] = pagingInfo.sortBy;
-        let [isDesc = false] = pagingInfo.sortDesc;
-        
-        this.getSoccerTeams({ ...pagingInfo, orderBy, isDesc });
-      },
-    },
-  },
-
   methods: {
     /**
-     * Gets the soccer team from the "server" and gets the previously favorited teams from indexeddb.
+     * Gets the Spain's soccer teams from the api-football and gets the previously favorited teams from indexeddb.
      * Attachs 'favorited' property to each team based on selections in indexded
      * Then sets them in the data in the component's data.
      */
-    async getSoccerTeams(pagingInfo) {
+    async getSoccerTeams() {
       let teams;
-      let totalItems = null;
       try {
         this.loading = true;
-        let teamsRes = await getSoccerTeams(pagingInfo);
-        teams = teamsRes.items;
-        totalItems = teamsRes.totalItems;
+        teams = await getSoccerTeams();
         let favoritedTeamsIds = await getFavoriteSoccerTeamIds();
         teams.forEach(
           (t) => (t.favorited = favoritedTeamsIds.includes(t.team_id))
@@ -109,7 +86,6 @@ export default {
 
       this.loading = false;
       this.teams = teams || [];
-      this.totalItems = totalItems;
     },
 
     /** Called on table row click to update faovirte team */
