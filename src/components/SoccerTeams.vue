@@ -11,7 +11,7 @@
           :footerProps="{ 'items-per-page-options': [5, 10] }"
         >
           <template v-slot:item.logo="{ item }">
-            <img :src="item.logo" class="crest-image" />
+            <v-img :src="item.logo" class="crest-image" />
           </template>
           <template v-slot:item.favorited="{ item }">
             <v-icon v-if="item.favorited" color="yellow">mdi-star</v-icon>
@@ -43,7 +43,7 @@ export default {
       {
         text: "",
         value: "favorited",
-        width: "30px",
+        width: "3em",
         sortable: false,
       },
       {
@@ -122,5 +122,9 @@ export default {
 
 .v-data-table tr {
   cursor: pointer;
+}
+
+.table > tbody > tr > td.text-start:first-child  {
+  padding-right: 0;
 }
 </style>
